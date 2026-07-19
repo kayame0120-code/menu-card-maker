@@ -149,10 +149,16 @@
     </div>
 
     <details class="io">
-      <summary>データの書き出し・読み込み(次回作業用のバックアップ)</summary>
-      <textarea id="io-text" placeholder="ここに書き出したデータが表示されます / 貼り付けて読み込みできます"></textarea><br>
+      <summary>商品リストの控え(バックアップ・別の人に渡す)</summary>
+      <div style="color:#666;line-height:1.7;margin-top:6px;font-size:12px">
+        「書き出す」を押すと、いま入っている商品が普通の文章で出てきます。全部コピーしてメモ帳やLINEのKeepに貼っておけば控えになります。<br>
+        戻す時・人からもらった時は、この欄に貼り付けて「読み込む」。
+      </div>
+      <textarea id="io-text" placeholder="商品名: チョコバナナパウンドケーキ&#10;英語名: Chocolate banana pound cake&#10;説明: バナナキャラメリゼしたものを生地に混ぜ込み…&#10;アレルゲン: 小麦・卵&#10;価格: 350"></textarea><br>
       <button onclick="exportData()">書き出す</button>
+      <button onclick="copyData()" style="background:#0a5bd3;color:#fff">📋 コピーする</button>
       <button onclick="importData()">読み込む</button>
+      <button onclick="resetAll()" style="color:#c0392b">初期サンプルに戻す(全削除)</button>
     </details>
   </div>
 
@@ -341,6 +347,28 @@ let items = [
   {name:"栗とほうじ茶のパンオショコラ", en:"chestnut and roasted green tea pain au chocolat", desc:"パンオショコラにほうじ茶のクリームと渋皮マロンをはさみ\nほうじ茶のアーモンドクリームを絞り焼き上げました。", allergen:"小麦・卵\n乳製品・大豆・アーモンド", price:"370"}
 ];
 
+/* ===== 端末内自動保存(localStorage) =====
+   入力のたびに自動保存し、次回開いた時に復元する。
+   保存先は「この端末のこのブラウザ」内のみ(他端末へは同期されない) */
+const STORAGE_KEY = "menu-card-maker-items-v1";
+try{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    const d = JSON.parse(saved);
+    if(Array.isArray(d) && d.length) items = d;
+  }
+}catch(e){ /* プライベートモード等で使えない場合はサンプルのまま動く */ }
+
+function saveItems(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }catch(e){}
+}
+
+function resetAll(){
+  if(!confirm('入力した商品を全て消して初期サンプル3件に戻します。よろしいですか?')) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  location.reload();
+}
+
 const CARD_W = 371, CARD_H = 254;
 const A4_W = 794, A4_H = 1123;
 
@@ -462,20 +490,65 @@ function fitAll(){
 window.addEventListener('resize', ()=>{ fitAll(); });
 
 let t=null;
-function updPreviewsDebounced(){ clearTimeout(t); t=setTimeout(()=>{ renderPreviews(); fitAll(); },150); }
+function updPreviewsDebounced(){ clearTimeout(t); t=setTimeout(()=>{ saveItems(); renderPreviews(); fitAll(); },150); }
 
 function upd(i,k,v){ items[i][k]=v; updPreviewsDebounced(); }
 
-function addItem(){ items.push({name:"",en:"",desc:"",allergen:"",price:""}); renderForms(); renderPreviews(); fitAll(); }
-function del(i){ if(confirm('商品'+(i+1)+'を削除しますか?')){ items.splice(i,1); renderForms(); renderPreviews(); fitAll(); } }
-function dup(i){ items.splice(i+1,0,{...items[i]}); renderForms(); renderPreviews(); fitAll(); }
-function move(i,d){ const j=i+d; if(j<0||j>=items.length)return; [items[i],items[j]]=[items[j],items[i]]; renderForms(); renderPreviews(); fitAll(); }
+function addItem(){ items.push({name:"",en:"",desc:"",allergen:"",price:""}); saveItems(); renderForms(); renderPreviews(); fitAll(); }
+function del(i){ if(confirm('商品'+(i+1)+'を削除しますか?')){ items.splice(i,1); saveItems(); renderForms(); renderPreviews(); fitAll(); } }
+function dup(i){ items.splice(i+1,0,{...items[i]}); saveItems(); renderForms(); renderPreviews(); fitAll(); }
+function move(i,d){ const j=i+d; if(j<0||j>=items.length)return; [items[i],items[j]]=[items[j],items[i]]; saveItems(); renderForms(); renderPreviews(); fitAll(); }
 
-function exportData(){ document.getElementById('io-text').value = JSON.stringify(items,null,1); }
+function exportData(){
+  const txt = items.map(it=>
+    "商品名: " + (it.name||"") +
+    "\n英語名: " + (it.en||"") +
+    "\n説明: " + (it.desc||"") +
+    "\nアレルゲン: " + (it.allergen||"") +
+    "\n価格: " + (it.price||"")
+  ).join("\n\n");
+  document.getElementById('io-text').value = txt;
+}
+
+async function copyData(){
+  const box = document.getElementById('io-text');
+  if(!box.value.trim()) exportData();   /* 書き出し忘れでも1タップで済むように */
+  try{
+    await navigator.clipboard.writeText(box.value);
+    alert('コピーしました。メモ帳やLINEのKeepに貼り付けて控えてください');
+  }catch(e){
+    /* 古いブラウザ向けフォールバック */
+    box.focus(); box.select();
+    const ok = document.execCommand && document.execCommand('copy');
+    alert(ok ? 'コピーしました。メモ帳やLINEのKeepに貼り付けて控えてください'
+             : 'コピーできませんでした。テキストを長押しで全選択してコピーしてください');
+  }
+}
+
 function importData(){
-  try{ const d = JSON.parse(document.getElementById('io-text').value);
-    if(Array.isArray(d)){ items = d; renderForms(); renderPreviews(); fitAll(); } else alert('形式が違います');
-  }catch(e){ alert('読み込めませんでした: '+e.message); }
+  const raw = document.getElementById('io-text').value.trim();
+  if(!raw){ alert('テキスト欄が空です。先に控えの文章を貼り付けてください'); return; }
+  let d = null;
+  /* 旧形式(JSON)のバックアップもそのまま読める */
+  try{ const j = JSON.parse(raw); if(Array.isArray(j)) d = j; }catch(e){}
+  if(!d){
+    d = [];
+    let cur = null, field = null;
+    const LABELS = {"商品名":"name","英語名":"en","説明":"desc","アレルゲン":"allergen","価格":"price"};
+    raw.split(/\r?\n/).forEach(line=>{
+      const m = line.match(/^(商品名|英語名|説明|アレルゲン|価格)[:：]\s?(.*)$/);
+      if(m){
+        if(m[1]==="商品名" || !cur){ cur = {name:"",en:"",desc:"",allergen:"",price:""}; d.push(cur); }
+        field = LABELS[m[1]];
+        cur[field] = m[2];
+      } else if(cur && field && line.trim()!==""){
+        cur[field] += "\n" + line;   /* ラベルなしの行は前の項目の続き(説明の2行目など) */
+      }
+    });
+    if(!d.length){ alert('読み取れませんでした。「書き出す」で出てくる形と同じ書き方で貼ってください'); return; }
+  }
+  items = d; saveItems(); renderForms(); renderPreviews(); fitAll();
+  alert(d.length + '件の商品を読み込みました');
 }
 
 document.getElementById('guides').addEventListener('change', e=>{
