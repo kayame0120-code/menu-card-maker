@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メニューカードメーカー — A4 8面付け</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --card-bg:#1f1f1f;
+    --ink:#ffffff;
+    --font-maru:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic','Meiryo',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font-maru);background:#ececf0;color:#222;}
+
+  .tabs{
+    position:sticky;top:0;z-index:10;display:flex;
+    background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.12);
+  }
+  .tabs button{
+    flex:1;border:none;background:#fff;padding:14px 8px;
+    font-size:14.5px;font-weight:900;color:#999;cursor:pointer;font-family:inherit;
+    border-bottom:3px solid transparent;
+  }
+  .tabs button.active{color:#111;border-bottom-color:#111;}
+
+  #screen-edit,#screen-preview{display:none;}
+  body.mode-edit #screen-edit{display:block;}
+  body.mode-preview #screen-preview{display:block;}
+
+  .panel{max-width:760px;margin:0 auto;padding:16px 14px 8px;}
+  .panel h1{font-size:20px;font-weight:900;margin:8px 0 2px;}
+  .panel .sub{font-size:12.5px;color:#666;margin-bottom:14px;line-height:1.7;}
+  .item{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .item-head .no{font-weight:900;font-size:13px;color:#888;}
+  .item-head .btns button{border:none;background:#f0f0f3;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;margin-left:6px;font-family:inherit;}
+  .item-head .btns .del{color:#c0392b;}
+  .field{margin-bottom:8px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#555;margin-bottom:3px;}
+  .en-row{display:flex;gap:8px;}
+  .en-row input{flex:1;}
+  .btn-trans{
+    border:none;background:#0a5bd3;color:#fff;border-radius:8px;
+    padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;
+    font-family:inherit;white-space:nowrap;
+  }
+  .en-msg{font-size:11px;color:#a3611c;margin-top:3px;min-height:0;line-height:1.5;}
+  .field input,.field textarea{width:100%;border:1.5px solid #ddd;border-radius:8px;padding:8px 10px;font-size:15px;font-family:inherit;}
+  .field textarea{resize:vertical;min-height:52px;line-height:1.5;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}
+  .actions button{border:none;border-radius:10px;padding:12px 16px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-add{background:#2b2b2e;color:#fff;}
+  .btn-preview{background:#0a5bd3;color:#fff;}
+  details.io{font-size:12.5px;margin-bottom:16px;}
+  details.io summary{cursor:pointer;color:#666;font-weight:700;}
+  details.io textarea{width:100%;min-height:80px;margin-top:8px;border:1.5px solid #ddd;border-radius:8px;padding:8px;font-size:12px;font-family:monospace;}
+  details.io button{margin-top:6px;border:none;background:#e8e8ec;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit;margin-right:6px;}
+
+  .edit-cards-title{max-width:760px;margin:0 auto;padding:4px 14px 8px;font-size:13px;font-weight:900;color:#555;}
+  .card-stack{max-width:760px;margin:0 auto;padding:0 14px 40px;}
+  .stack-box{overflow:hidden;margin-bottom:16px;}
+  .stack-scale{transform-origin:top left;}
+  .card-holder{width:371px;height:224px;}
+
+  .pv-bar{max-width:900px;margin:0 auto;padding:14px 14px 4px;}
+  .pv-bar .pv-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
+  .pv-bar button{border:none;border-radius:10px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-img{background:#8a3ffc;color:#fff;}
+  .btn-print{background:#0a7d4f;color:#fff;}
+  .btn-back{background:#e6e6ea;color:#333;}
+  .pv-info{font-size:12.5px;color:#666;line-height:1.7;}
+  .img-msg{font-size:12px;color:#8a3ffc;font-weight:700;margin:2px 0 4px;}
+  .img-out{max-width:900px;margin:0 auto;padding:0 14px;}
+  .img-out .img-hint{background:#f3ecff;border:1px solid #d9c8fa;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.8;color:#5b2bb0;margin-bottom:10px;}
+  .img-out img{display:block;width:100%;max-width:560px;margin:0 auto 14px;border:1px solid #ddd;box-shadow:0 1px 6px rgba(0,0,0,.15);}
+  .note{background:#fff8e5;border:1px solid #f0dfa8;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.8;margin:8px auto 12px;max-width:900px;}
+  .note b{color:#a3611c;}
+  .opt{font-size:13px;margin:4px 0 8px;}
+  .opt label{cursor:pointer;}
+
+  .sheet-area{padding:0 0 40px;}
+  .sheet-box{margin:0 auto 18px;overflow:hidden;}
+  .sheet-scale{transform-origin:top left;}
+  .page-label{text-align:center;font-size:12px;color:#888;font-weight:700;margin:0 0 6px;}
+  .sheet{
+    width:210mm;height:297mm;background:#fff;
+    display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);
+    box-shadow:0 2px 12px rgba(0,0,0,.2);
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .cell{
+    display:flex;align-items:center;justify-content:center;
+    border:0.3mm dashed #c9c9c9;padding:3.5mm;
+  }
+  body.no-guides .cell{border-color:transparent;}
+
+  .card{
+    width:100%;height:auto;aspect-ratio:91/55;
+    background:var(--card-bg);color:var(--ink);
+    border-radius:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:1.5mm 4.5mm;text-align:center;
+    font-family:var(--font-maru);
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .c-name{font-weight:900;font-size:6.8mm;line-height:1.2;letter-spacing:.01em;white-space:nowrap;}
+  .c-en{font-weight:700;font-size:3.5mm;letter-spacing:.05em;margin-top:2.5mm;}
+  .c-desc{font-weight:700;font-size:3.0mm;line-height:1.55;margin-top:4mm;white-space:pre-wrap;}
+  .c-line{width:87%;height:0.55mm;background:var(--ink);margin:3.8mm 0 5mm;}
+  .c-bottom{display:flex;align-items:center;justify-content:center;width:87%;}
+  .c-bottom.has-alg .c-allergen{flex:1;}
+  .c-allergen{font-weight:900;font-size:2.5mm;line-height:1.5;text-align:center;white-space:pre-wrap;}
+  .c-price{font-weight:700;font-size:11.4mm;letter-spacing:.01em;white-space:nowrap;}
+  .c-price .yen{font-size:7.6mm;margin-right:1mm;}
+  .c-price .tax{font-size:4.6mm;font-weight:700;}
+
+  @page{size:A4 portrait;margin:0;}
+  @media print{
+    body{background:#fff;}
+    .tabs,.pv-bar,.note,#screen-edit,.page-label{display:none;}
+    body.mode-edit #screen-preview{display:block;}
+    .sheet-area{padding:0;}
+    .sheet-box{margin:0;overflow:visible;}
+    .sheet-scale{transform:none !important;height:auto !important;}
+    .sheet{box-shadow:none;page-break-after:always;}
+    .sheet-box:last-child .sheet{page-break-after:auto;}
+  }
+</style>
+</head>
+<body class="mode-edit">
+
+<div class="tabs">
+  <button id="tab-edit" class="active" onclick="setMode('edit')">① 入力</button>
+  <button id="tab-preview" onclick="setMode('preview')">② カード画像</button>
+</div>
+
+<!-- ===== 画面1: 入力 ===== -->
+<div id="screen-edit">
+  <div class="panel">
+    <h1>メニューカードメーカー <span style="font-size:11px;color:#aaa;font-weight:700">v8</span></h1>
+    <p class="sub">商品名を入れて<b>「英語に変換」ボタン</b>を押すと英語名が入ります(内蔵辞書→足りない語はネット翻訳の二段構え)。英語名とアレルゲンは空欄OK。</p>
+
+    <div id="items"></div>
+
+    <div class="actions">
+      <button class="btn-add" onclick="addItem()">＋ 商品を追加</button>
+      <button class="btn-preview" onclick="setMode('preview')">② カード画像を作る →</button>
+    </div>
+
+    <details class="io">
+      <summary>商品リストの控え(バックアップ・別の人に渡す)</summary>
+      <div style="color:#666;line-height:1.7;margin-top:6px;font-size:12px">
+        「書き出す」を押すと、いま入っている商品が普通の文章で出てきます。全部コピーしてメモ帳やLINEのKeepに貼っておけば控えになります。<br>
+        戻す時・人からもらった時は、この欄に貼り付けて「読み込む」。
+      </div>
+      <textarea id="io-text" placeholder="商品名: チョコバナナパウンドケーキ&#10;英語名: Chocolate banana pound cake&#10;説明: バナナキャラメリゼしたものを生地に混ぜ込み…&#10;アレルゲン: 小麦・卵&#10;価格: 350"></textarea><br>
+      <button onclick="exportData()">書き出す</button>
+      <button onclick="copyData()" style="background:#0a5bd3;color:#fff">📋 コピーする</button>
+      <button onclick="importData()">読み込む</button>
+      <button onclick="resetAll()" style="color:#c0392b">初期サンプルに戻す(全削除)</button>
+    </details>
+  </div>
+
+  <div class="edit-cards-title">▼ 仕上がりイメージ(入力すると即時反映)</div>
+  <div class="card-stack" id="cards-edit"></div>
+</div>
+
+<!-- ===== 画面2: 印刷プレビュー ===== -->
+<div id="screen-preview">
+  <div class="pv-bar">
+    <div class="pv-actions">
+      <button class="btn-img" onclick="saveImages()">🖼 カード画像を作る(1枚ずつ)</button>
+      <button class="btn-back" onclick="setMode('edit')">← 入力に戻る</button>
+    </div>
+    <div class="img-msg" id="img-msg"></div>
+    <div class="pv-info" id="pv-info"></div>
+  </div>
+
+  <div class="note">
+    <b>使い方:</b> ①で商品を入力 → 「カード画像を作る」→ 出てきた画像を1枚ずつ保存 → <b>Canvaにアップロードして各ページに配置</b> → Canva上で好みに微調整して印刷。画像は元デザインと同じ縦横比(91:55)・印刷画質(300dpi)です。
+  </div>
+
+  <div class="img-out" id="img-out"></div>
+
+  <div class="sheet-area" id="sheets-preview"></div>
+</div>
+
+<script>
+/* ============================================================
+   商品名 → 英語名 変換(内蔵辞書 約350語 + ネット翻訳)
+   ============================================================ */
+const DICT = [
+  ["パウンドケーキ","pound cake"],["ロールケーキ","roll cake"],["シフォンケーキ","chiffon cake"],
+  ["ベイクドチーズケーキ","baked cheesecake"],["レアチーズケーキ","rare cheesecake"],["バスクチーズケーキ","basque cheesecake"],
+  ["チーズケーキ","cheesecake"],["ショートケーキ","shortcake"],["パンケーキ","pancake"],["ホットケーキ","pancake"],
+  ["カップケーキ","cupcake"],["ミルクレープ","mille crêpes"],["ケーキ","cake"],
+  ["ガトーショコラ","gâteau chocolat"],["ガトー","gâteau"],["ザッハトルテ","sachertorte"],["オペラ","opera"],
+  ["モンブラン","mont blanc"],["フレジエ","fraisier"],["トルテ","torte"],
+  ["パンオショコラ","pain au chocolat"],["パン・オ・ショコラ","pain au chocolat"],["パンオレザン","pain aux raisins"],
+  ["パンオフリュイ","pain aux fruits"],["パンドミ","pain de mie"],["パンドカンパーニュ","pain de campagne"],
+  ["クロワッサンダマンド","croissant aux amandes"],["クロワッサン","croissant"],["デニッシュ","danish"],["ブリオッシュ","brioche"],
+  ["バゲット","baguette"],["バケット","baguette"],["バタール","bâtard"],["ブール","boule"],["エピ","épi"],["クッペ","coupe"],
+  ["カンパーニュ","campagne"],["リュスティック","rustique"],["ロデヴ","lodève"],["フォカッチャ","focaccia"],["チャバタ","ciabatta"],
+  ["プレッツェル","pretzel"],["ベーグル","bagel"],["マフィン","muffin"],["スコーン","scone"],["シュトーレン","stollen"],
+  ["パネトーネ","panettone"],["クグロフ","kouglof"],["ヴィエノワズリー","viennoiserie"],
+  ["食パン","bread loaf"],["メロンパン","melon bread"],["カレーパン","curry bread"],["あんぱん","anpan"],["アンパン","anpan"],
+  ["コッペパン","koppe bread"],["クリームパン","cream bread"],["ジャムパン","jam bread"],["チョココロネ","chocolate cornet"],
+  ["コロネ","cornet"],["揚げパン","fried bread"],["塩パン","salted butter roll"],["くるみパン","walnut bread"],
+  ["ちぎりパン","pull-apart bread"],["ロールパン","bread roll"],["バターロール","butter roll"],["シナモンロール","cinnamon roll"],
+  ["フランスパン","french bread"],["ミルクフランス","milk french"],["明太フランス","mentaiko french"],["ソフトフランス","soft french bread"],
+  ["ハードパン","hard bread"],["パン","bread"],
+  ["シュークリーム","cream puff"],["シュー","choux"],["エクレア","éclair"],["タルトタタン","tarte tatin"],
+  ["タルトレット","tartlet"],["タルト","tart"],["パイ","pie"],["ミルフィーユ","mille-feuille"],
+  ["フィナンシェ","financier"],["マドレーヌ","madeleine"],["カヌレ","canelé"],["ダックワーズ","dacquoise"],
+  ["フロランタン","florentine"],["サブレ","sablé"],["クッキー","cookie"],["ビスケット","biscuit"],["ビスコッティ","biscotti"],
+  ["ラスク","rusk"],["ブラウニー","brownie"],["バウムクーヘン","baumkuchen"],["カステラ","castella"],
+  ["ワッフル","waffle"],["クレープ","crepe"],["ガレット","galette"],["ドーナツ","donut"],["マカロン","macaron"],
+  ["メレンゲ","meringue"],["ヌガー","nougat"],["スフレ","soufflé"],["クラフティ","clafoutis"],["テリーヌ","terrine"],
+  ["プリン","pudding"],["ゼリー","jelly"],["ムース","mousse"],["ババロア","bavarois"],["パフェ","parfait"],
+  ["ティラミス","tiramisu"],["パンナコッタ","panna cotta"],["アイス","ice cream"],["ジェラート","gelato"],["ソルベ","sorbet"],
+  ["サンドイッチ","sandwich"],["フルーツサンド","fruit sandwich"],["カツサンド","cutlet sandwich"],["たまごサンド","egg sandwich"],
+  ["サンド","sandwich"],["トースト","toast"],["ピザトースト","pizza toast"],["ピザ","pizza"],
+  ["キッシュ","quiche"],["グラタン","gratin"],["クロックムッシュ","croque monsieur"],["クロックマダム","croque madame"],["ピロシキ","piroshki"],
+  ["どら焼き","dorayaki"],["たい焼き","taiyaki"],["鯛焼き","taiyaki"],["今川焼","imagawayaki"],
+  ["大福","daifuku"],["団子","dango"],["だんご","dango"],["わらび餅","warabi mochi"],["もち","mochi"],["餅","mochi"],
+  ["羊羹","yokan"],["ようかん","yokan"],["最中","monaka"],["もなか","monaka"],["まんじゅう","manju"],["饅頭","manju"],
+  ["みたらし","mitarashi"],["ぜんざい","zenzai"],["おはぎ","ohagi"],["白玉","shiratama"],["求肥","gyuhi"],
+  ["かりんとう","karinto"],["芋けんぴ","imo kenpi"],["甘納豆","amanatto"],["せんべい","senbei"],
+  ["ストロベリー","strawberry"],["いちご","strawberry"],["イチゴ","strawberry"],["苺","strawberry"],["あまおう","amaou strawberry"],
+  ["バナナ","banana"],["クランベリー","cranberry"],["ブルーベリー","blueberry"],["ラズベリー","raspberry"],
+  ["フランボワーズ","framboise"],["カシス","cassis"],["ベリー","berry"],
+  ["シャインマスカット","shine muscat"],["マスカット","muscat"],["巨峰","kyoho grape"],["ピオーネ","pione grape"],
+  ["レーズン","raisin"],["ぶどう","grape"],["ブドウ","grape"],["葡萄","grape"],
+  ["りんご","apple"],["リンゴ","apple"],["林檎","apple"],["アップル","apple"],
+  ["レモン","lemon"],["ライム","lime"],["オレンジ","orange"],["ブラッドオレンジ","blood orange"],
+  ["グレープフルーツ","grapefruit"],["ゆず","yuzu"],["柚子","yuzu"],["みかん","mandarin"],["甘夏","amanatsu"],
+  ["八朔","hassaku"],["金柑","kumquat"],["ベルガモット","bergamot"],
+  ["桃","peach"],["ピーチ","peach"],["洋梨","pear"],["ラフランス","la france pear"],["梨","pear"],
+  ["マンゴー","mango"],["キウイ","kiwi"],["パイナップル","pineapple"],["パイン","pineapple"],
+  ["メロン","melon"],["スイカ","watermelon"],["チェリー","cherry"],["さくらんぼ","cherry"],["桜","sakura"],
+  ["パッションフルーツ","passion fruit"],["ライチ","lychee"],["ココナッツ","coconut"],
+  ["アプリコット","apricot"],["あんず","apricot"],["杏","apricot"],["いちじく","fig"],["イチジク","fig"],["無花果","fig"],
+  ["プルーン","prune"],["デーツ","dates"],["柿","persimmon"],["フルーツ","fruit"],
+  ["渋皮マロン","candied chestnut"],["渋皮栗","candied chestnut"],["栗","chestnut"],["マロン","marron"],
+  ["ほうじ茶","roasted green tea"],["抹茶","matcha"],["緑茶","green tea"],["紅茶","black tea"],
+  ["アールグレイ","earl grey"],["チャイ","chai"],["ラテ","latte"],
+  ["コーヒー","coffee"],["珈琲","coffee"],["モカ","mocha"],["エスプレッソ","espresso"],["カフェオレ","café au lait"],
+  ["あんこ","red bean paste"],["こしあん","red bean paste"],["つぶあん","red bean paste"],["小倉","ogura"],["あん","red bean"],
+  ["きなこ","kinako"],["黒豆","black soybean"],["大豆","soybean"],["豆乳","soy milk"],["枝豆","edamame"],["ずんだ","zunda"],
+  ["さつまいも","sweet potato"],["スイートポテト","sweet potato"],["安納芋","annou sweet potato"],["紫芋","purple sweet potato"],
+  ["かぼちゃ","pumpkin"],["カボチャ","pumpkin"],["南瓜","pumpkin"],
+  ["くるみ","walnut"],["クルミ","walnut"],["胡桃","walnut"],["アーモンド","almond"],["ピスタチオ","pistachio"],
+  ["ヘーゼルナッツ","hazelnut"],["カシューナッツ","cashew"],["マカダミア","macadamia"],["ピーカンナッツ","pecan"],
+  ["ピーナッツバター","peanut butter"],["ピーナッツ","peanut"],["ナッツ","nut"],
+  ["黒ごま","black sesame"],["ごま","sesame"],["ゴマ","sesame"],
+  ["カスタード","custard"],["生クリーム","fresh cream"],["ホイップ","whipped cream"],["バタークリーム","buttercream"],
+  ["クリームチーズ","cream cheese"],["マスカルポーネ","mascarpone"],["リコッタ","ricotta"],["カマンベール","camembert"],
+  ["ゴルゴンゾーラ","gorgonzola"],["モッツァレラ","mozzarella"],["チェダー","cheddar"],["グリュイエール","gruyère"],
+  ["クリーム","cream"],["チーズ","cheese"],["発酵バター","cultured butter"],["バター","butter"],
+  ["ミルク","milk"],["練乳","condensed milk"],["ヨーグルト","yogurt"],["サワークリーム","sour cream"],
+  ["たまご","egg"],["卵","egg"],["エッグ","egg"],
+  ["ホワイトチョコ","white chocolate"],["ミルクチョコ","milk chocolate"],["チョコレート","chocolate"],["チョコ","chocolate"],
+  ["ショコラ","chocolat"],["ガナッシュ","ganache"],["プラリネ","praline"],["ジャンドゥーヤ","gianduja"],
+  ["カカオ","cacao"],["ココア","cocoa"],["マジパン","marzipan"],["フォンダン","fondant"],["グラサージュ","glaçage"],
+  ["キャラメリゼ","caramelized"],["塩キャラメル","salted caramel"],["キャラメル","caramel"],["カラメル","caramel"],
+  ["はちみつ","honey"],["ハチミツ","honey"],["蜂蜜","honey"],["メープル","maple"],["黒糖","brown sugar"],["和三盆","wasanbon"],
+  ["ジャム","jam"],["マーマレード","marmalade"],["コンフィチュール","confiture"],["コンポート","compote"],
+  ["レモンカード","lemon curd"],["ピール","peel"],["シロップ","syrup"],
+  ["バニラ","vanilla"],["シナモン","cinnamon"],["ラムレーズン","rum raisin"],["ラム","rum"],["ブランデー","brandy"],
+  ["きるしゅ","kirsch"],["キルシュ","kirsch"],["洋酒","liqueur"],["ワイン","wine"],
+  ["ベーコン","bacon"],["ハム","ham"],["ソーセージ","sausage"],["ウインナー","sausage"],["チキン","chicken"],
+  ["明太子","mentaiko"],["カレー","curry"],["トマト","tomato"],["ポテト","potato"],["コーン","corn"],
+  ["オニオン","onion"],["ガーリック","garlic"],["バジル","basil"],["ほうれん草","spinach"],["オリーブ","olive"],
+  ["全粒粉","whole wheat"],["ライ麦","rye"],["米粉","rice flour"],["そば粉","buckwheat"],["小麦","wheat"],
+  ["ダブル","double"],["ミックス","mixed"],["ホワイト","white"],["白","white"],["ブラック","black"],["黒","black"],
+  ["濃厚","rich"],["塩","salted"],["生","fresh"],["焼き","baked"],["揚げ","fried"],["蒸し","steamed"],
+  ["ふわふわ","fluffy"],["もちもち","chewy"],["ざくざく","crunchy"],["サクサク","crispy"],["しっとり","moist"],["とろける","melting"],
+  ["ミニ","mini"],["プチ","petit"],["ハーフ","half"],["ホール","whole"],
+  ["特製","special"],["自家製","homemade"],["季節の","seasonal"],["限定","limited"],
+  ["春の","spring"],["夏の","summer"],["秋の","autumn"],["冬の","winter"],
+  ["と","and"],["&","and"],["＆","and"],["入り",""],["の",""],["・",""],[" ",""],["　",""]
+];
+DICT.sort((a,b)=>b[0].length-a[0].length);
+
+function dictEn(name){
+  if(!name) return {text:"", unknown:[]};
+  let i=0, out=[], unk="", unknown=[];
+  while(i<name.length){
+    let hit=null;
+    for(const [ja,en] of DICT){
+      if(ja && name.startsWith(ja,i)){ hit=[ja,en]; break; }
+    }
+    if(hit){
+      if(unk){ unknown.push(unk); unk=""; }
+      if(hit[1]) out.push(hit[1]);
+      i+=hit[0].length;
+    } else { unk += name[i]; i++; }
+  }
+  if(unk) unknown.push(unk);
+  let s = out.join(" ").replace(/\s+/g," ").trim();
+  if(s) s = s.charAt(0).toUpperCase()+s.slice(1);
+  return {text:s, unknown};
+}
+
+async function netEn(text){
+  const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=ja|en";
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  const data = await res.json();
+  let s = (data.responseData && data.responseData.translatedText || "").trim();
+  if(!s) throw new Error("empty");
+  s = s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();
+  return s;
+}
+
+async function translateEn(i){
+  const it = items[i];
+  const msg = document.getElementById('enmsg-'+i);
+  const input = document.getElementById('en-'+i);
+  if(!it.name || !it.name.trim()){ if(msg) msg.textContent = "先に商品名を入れてください"; return; }
+  const r = dictEn(it.name);
+  if(r.unknown.length === 0){
+    it.en = r.text; if(input) input.value = r.text; if(msg) msg.textContent = "";
+    updPreviewsDebounced(); return;
+  }
+  if(msg) msg.textContent = "辞書にない語(" + r.unknown.join("、") + ")があるためネット翻訳中…";
+  if(input && r.text) input.value = r.text;
+  try{
+    const s = await netEn(it.name);
+    it.en = s; if(input) input.value = s;
+    if(msg) msg.textContent = "ネット翻訳を使用しました。表現が変なら手で直してください";
+  }catch(e){
+    it.en = r.text;
+    if(msg) msg.textContent = "「" + r.unknown.join("、") + "」は変換できませんでした(ネット翻訳も不可)。英語欄に手で足してください";
+  }
+  updPreviewsDebounced();
+}
+
+/* ============================================================ */
+let items = [
+  {name:"クランベリーショコラ", en:"", desc:"バケット生地にきるしゅ漬けのクランベリーと\nチョコレートを巻き込み焼き上げました", allergen:"", price:"390"},
+  {name:"チョコバナナパウンドケーキ", en:"Chocolate banana pound cake", desc:"バナナキャラメリゼしたものを生地に混ぜ込み\nしっとりしたパウンドケーキに仕上げました。", allergen:"小麦・卵\n乳製品・くるみ", price:"350"},
+  {name:"栗とほうじ茶のパンオショコラ", en:"chestnut and roasted green tea pain au chocolat", desc:"パンオショコラにほうじ茶のクリームと渋皮マロンをはさみ\nほうじ茶のアーモンドクリームを絞り焼き上げました。", allergen:"小麦・卵\n乳製品・大豆・アーモンド", price:"370"}
+];
+
+/* ===== 端末内自動保存(localStorage) =====
+   入力のたびに自動保存し、次回開いた時に復元する。
+   保存先は「この端末のこのブラウザ」内のみ(他端末へは同期されない) */
+const STORAGE_KEY = "menu-card-maker-items-v1";
+try{
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    const d = JSON.parse(saved);
+    if(Array.isArray(d) && d.length) items = d;
+  }
+}catch(e){ /* プライベートモード等で使えない場合はサンプルのまま動く */ }
+
+function saveItems(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }catch(e){}
+}
+
+function resetAll(){
+  if(!confirm('入力した商品を全て消して初期サンプル3件に戻します。よろしいですか?')) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  location.reload();
+}
+
+const CARD_W = 371, CARD_H = 224;
+const A4_W = 794, A4_H = 1123;
+
+const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function setMode(m){
+  document.body.classList.toggle('mode-edit', m==='edit');
+  document.body.classList.toggle('mode-preview', m==='preview');
+  document.getElementById('tab-edit').classList.toggle('active', m==='edit');
+  document.getElementById('tab-preview').classList.toggle('active', m==='preview');
+  renderPreviews(); fitAll();
+  window.scrollTo(0,0);
+}
+
+function renderForms(){
+  const wrap = document.getElementById('items');
+  wrap.innerHTML = items.map((it,i)=>`
+    <div class="item">
+      <div class="item-head">
+        <span class="no">商品 ${i+1}</span>
+        <span class="btns">
+          <button onclick="move(${i},-1)">↑</button>
+          <button onclick="move(${i},1)">↓</button>
+          <button onclick="dup(${i})">複製</button>
+          <button class="del" onclick="del(${i})">削除</button>
+        </span>
+      </div>
+      <div class="field"><label>商品名</label>
+        <input value="${esc(it.name)}" oninput="upd(${i},'name',this.value)"></div>
+      <div class="field">
+        <label>英語名(空欄可)</label>
+        <div class="en-row">
+          <input id="en-${i}" value="${esc(it.en)}" oninput="upd(${i},'en',this.value)">
+          <button class="btn-trans" onclick="translateEn(${i})">英語に変換</button>
+        </div>
+        <div class="en-msg" id="enmsg-${i}"></div>
+      </div>
+      <div class="field"><label>説明文(改行そのまま反映)</label>
+        <textarea oninput="upd(${i},'desc',this.value)">${esc(it.desc)}</textarea></div>
+      <div class="row2">
+        <div class="field"><label>アレルゲン(空欄可・改行可)</label>
+          <textarea oninput="upd(${i},'allergen',this.value)">${esc(it.allergen)}</textarea></div>
+        <div class="field"><label>価格(数字のみ)</label>
+          <input value="${esc(it.price)}" inputmode="numeric" oninput="upd(${i},'price',this.value)"></div>
+      </div>
+    </div>`).join('');
+}
+
+function nameSizeMm(name){
+  /* カード内幅89mmに収まる最大サイズ(上限6.0mm=Canva実測15.7pt) */
+  let eff = 0;
+  for(const ch of (name||"")) eff += ch.charCodeAt(0) > 255 ? 1 : 0.55;
+  if(eff < 1) eff = 1;
+  return Math.min(6.0, 89/eff);
+}
+
+function cardHTML(it){
+  const nameSize = nameSizeMm(it.name);
+  const priceNum = esc((it.price||"").replace(/[^0-9,]/g,""));
+  const bottom = it.allergen && it.allergen.trim()
+    ? `<div class="c-bottom has-alg">
+         <div class="c-allergen">${esc(it.allergen)}</div>
+         <div class="c-price"><span class="yen">¥</span>${priceNum}<span class="tax">(税込)</span></div>
+       </div>`
+    : `<div class="c-bottom">
+         <div class="c-price"><span class="yen">¥</span>${priceNum}<span class="tax">(税込)</span></div>
+       </div>`;
+  return `<div class="card">
+    <div class="c-name" style="font-size:${nameSize}mm">${esc(it.name)}</div>
+    ${it.en && it.en.trim() ? `<div class="c-en">${esc(it.en)}</div>` : ""}
+    ${it.desc && it.desc.trim() ? `<div class="c-desc">${esc(it.desc)}</div>` : ""}
+    <div class="c-line"></div>
+    ${bottom}
+  </div>`;
+}
+
+function renderCardStack(){
+  const wrap = document.getElementById('cards-edit');
+  wrap.innerHTML = items.map(it=>`
+    <div class="stack-box">
+      <div class="stack-scale"><div class="card-holder">${cardHTML(it)}</div></div>
+    </div>`).join('');
+}
+
+function renderSheets(){
+  document.getElementById('sheets-preview').innerHTML = "";
+  document.getElementById('pv-info').textContent =
+    "商品 " + items.length + " 件 → カード画像 " + items.length + " 枚";
+}
+
+function renderPreviews(){ renderCardStack(); renderSheets(); }
+
+function fitAll(){
+  const stack = document.getElementById('cards-edit');
+  const availC = Math.min(document.documentElement.clientWidth, 760) - 28;
+  const sC = availC / CARD_W;
+  stack.querySelectorAll('.stack-box').forEach(box=>{
+    const sc = box.querySelector('.stack-scale');
+    sc.style.transform = `scale(${sC})`;
+    sc.style.height = (CARD_H*sC) + 'px';
+    box.style.width = (CARD_W*sC) + 'px';
+  });
+  const availA = Math.min(document.documentElement.clientWidth - 16, 900);
+  const sA = Math.min(1, availA / A4_W);
+  document.querySelectorAll('#sheets-preview .sheet-box').forEach(box=>{
+    const sc = box.querySelector('.sheet-scale');
+    sc.style.transform = `scale(${sA})`;
+    sc.style.height = (A4_H*sA) + 'px';
+    box.style.width = (A4_W*sA) + 'px';
+  });
+}
+window.addEventListener('resize', ()=>{ fitAll(); });
+
+let t=null;
+function updPreviewsDebounced(){ clearTimeout(t); t=setTimeout(()=>{ saveItems(); renderPreviews(); fitAll(); },150); }
+
+function upd(i,k,v){ items[i][k]=v; updPreviewsDebounced(); }
+
+function addItem(){ items.push({name:"",en:"",desc:"",allergen:"",price:""}); saveItems(); renderForms(); renderPreviews(); fitAll(); }
+function del(i){ if(confirm('商品'+(i+1)+'を削除しますか?')){ items.splice(i,1); saveItems(); renderForms(); renderPreviews(); fitAll(); } }
+function dup(i){ items.splice(i+1,0,{...items[i]}); saveItems(); renderForms(); renderPreviews(); fitAll(); }
+function move(i,d){ const j=i+d; if(j<0||j>=items.length)return; [items[i],items[j]]=[items[j],items[i]]; saveItems(); renderForms(); renderPreviews(); fitAll(); }
+
+function exportData(){
+  const txt = items.map(it=>
+    "商品名: " + (it.name||"") +
+    "\n英語名: " + (it.en||"") +
+    "\n説明: " + (it.desc||"") +
+    "\nアレルゲン: " + (it.allergen||"") +
+    "\n価格: " + (it.price||"")
+  ).join("\n\n");
+  document.getElementById('io-text').value = txt;
+}
+
+async function copyData(){
+  const box = document.getElementById('io-text');
+  if(!box.value.trim()) exportData();   /* 書き出し忘れでも1タップで済むように */
+  try{
+    await navigator.clipboard.writeText(box.value);
+    alert('コピーしました。メモ帳やLINEのKeepに貼り付けて控えてください');
+  }catch(e){
+    /* 古いブラウザ向けフォールバック */
+    box.focus(); box.select();
+    const ok = document.execCommand && document.execCommand('copy');
+    alert(ok ? 'コピーしました。メモ帳やLINEのKeepに貼り付けて控えてください'
+             : 'コピーできませんでした。テキストを長押しで全選択してコピーしてください');
+  }
+}
+
+function importData(){
+  const raw = document.getElementById('io-text').value.trim();
+  if(!raw){ alert('テキスト欄が空です。先に控えの文章を貼り付けてください'); return; }
+  let d = null;
+  /* 旧形式(JSON)のバックアップもそのまま読める */
+  try{ const j = JSON.parse(raw); if(Array.isArray(j)) d = j; }catch(e){}
+  if(!d){
+    d = [];
+    let cur = null, field = null;
+    const LABELS = {"商品名":"name","英語名":"en","説明":"desc","アレルゲン":"allergen","価格":"price"};
+    raw.split(/\r?\n/).forEach(line=>{
+      const m = line.match(/^(商品名|英語名|説明|アレルゲン|価格)[:：]\s?(.*)$/);
+      if(m){
+        if(m[1]==="商品名" || !cur){ cur = {name:"",en:"",desc:"",allergen:"",price:""}; d.push(cur); }
+        field = LABELS[m[1]];
+        cur[field] = m[2];
+      } else if(cur && field && line.trim()!==""){
+        cur[field] += "\n" + line;   /* ラベルなしの行は前の項目の続き(説明の2行目など) */
+      }
+    });
+    if(!d.length){ alert('読み取れませんでした。「書き出す」で出てくる形と同じ書き方で貼ってください'); return; }
+  }
+  items = d; saveItems(); renderForms(); renderPreviews(); fitAll();
+  alert(d.length + '件の商品を読み込みました');
+}
+
+/* ============================================================
+   画像(PNG)書き出し — A4 300dpi(2480×3508px)でCanvas描画
+   ============================================================ */
+const DPI = 300;
+const MM = DPI / 25.4;                 /* 1mm あたりのpx */
+const FONTS = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif';
+
+function fnt(weight, mm){ return `${weight} ${Math.round(mm*MM)}px ${FONTS}`; }
+
+/* 名前が枠に収まらない場合さらに縮小 */
+function fitFont(ctx, text, weight, mm, maxW){
+  let size = mm;
+  ctx.font = fnt(weight, size);
+  while(size > 2.5 && ctx.measureText(text).width > maxW){
+    size -= 0.2;
+    ctx.font = fnt(weight, size);
+  }
+  return size;
+}
+
+function drawCard(ctx, it, x, y, w, h){
+  /* 黒地(角丸なし) */
+  ctx.fillStyle = "#1f1f1f";
+  ctx.fillRect(x, y, w, h);   /* 91:55比率に補正済み */
+
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const cardH = w*55/91; y = y + (h - cardH)/2; h = cardH;
+  const cx = x + w/2;
+  const innerW = w - 9*MM;  /* 左右4.5mmずつ */
+
+  const descLines = (it.desc||"").trim() ? it.desc.trim().split("\n") : [];
+  const algLines  = (it.allergen||"").trim() ? it.allergen.trim().split("\n") : [];
+  const hasEn = !!(it.en||"").trim();
+  const priceNum = (it.price||"").replace(/[^0-9,]/g,"");
+
+  /* --- 各ブロックの高さをmmで積算(CSS側と同一値) --- */
+  const nameMm  = nameSizeMm(it.name);
+  const nameH   = nameMm*1.2;
+  const enH     = hasEn ? 2.5 + 3.5*1.3 : 0;
+  const descH   = descLines.length ? 4 + descLines.length*3.0*1.55 : 0;
+  const ruleH   = 3.8 + 0.55 + 5;
+  const algH    = algLines.length*2.5*1.5;
+  const priceH  = 11.4*1.15;
+  const botH    = Math.max(algH, priceH);
+  const totalH  = nameH + enH + descH + ruleH + botH;
+
+  let cy = y + h/2 - (totalH*MM)/2;   /* 上端から順に描く */
+
+  /* 商品名 */
+  const realNameMm = fitFont(ctx, it.name||"", 900, nameMm, innerW);
+  ctx.font = fnt(900, realNameMm);
+  ctx.fillText(it.name||"", cx, cy + (nameH*MM)/2);
+  cy += nameH*MM;
+
+  /* 英語名 */
+  if(hasEn){
+    cy += 2.5*MM;
+    const enMm = fitFont(ctx, it.en.trim(), 700, 3.5, innerW);
+    ctx.font = fnt(700, enMm);
+    ctx.fillText(it.en.trim(), cx, cy + (3.5*1.3*MM)/2);
+    cy += 3.5*1.3*MM;
+  }
+
+  /* 説明文 */
+  if(descLines.length){
+    cy += 4*MM;
+    const lh = 3.0*1.55*MM;
+    descLines.forEach(line=>{
+      const m = fitFont(ctx, line, 700, 3.0, innerW);
+      ctx.font = fnt(700, m);
+      ctx.fillText(line, cx, cy + lh/2);
+      cy += lh;
+    });
+  }
+
+  /* 白線 */
+  cy += 3.8*MM;
+  ctx.fillRect(x + w*0.065, cy, w*0.87, 0.55*MM);
+  cy += (0.55+5)*MM;
+
+  /* 下段: 白線と同じ幅の行。価格は右端揃え、アレルゲンは残り左側の中央 */
+  const rowCy = cy + (botH*MM)/2;
+  const rowL = x + w*0.065, rowR = x + w*0.935;
+  ctx.font = fnt(700, 11.4);
+  const numW = ctx.measureText(priceNum).width;
+  ctx.font = fnt(700, 7.6);
+  const yenW = ctx.measureText("¥").width;
+  ctx.font = fnt(700, 4.6);
+  const taxW = ctx.measureText("(税込)").width;
+  const priceW = yenW + 1*MM + numW + 0.5*MM + taxW;
+
+  let rx;
+  if(algLines.length){
+    const priceLeft = rowR - priceW;
+    /* アレルゲンは行左端〜価格左端の中央に */
+    const aCx = (rowL + priceLeft) / 2;
+    ctx.font = fnt(900, 2.5);
+    const alh = 2.5*1.5*MM;
+    let ay = rowCy - (algLines.length*alh)/2;
+    algLines.forEach(l=>{
+      ctx.fillText(l, aCx, ay + alh/2);
+      ay += alh;
+    });
+    rx = priceLeft;
+  } else {
+    rx = cx - priceW/2;
+  }
+
+  /* 価格(左寄せで組む) */
+  ctx.textAlign = "left";
+  ctx.font = fnt(700, 7.6);
+  ctx.fillText("¥", rx, rowCy);
+  rx += yenW + 1*MM;
+  ctx.font = fnt(700, 11.4);
+  ctx.fillText(priceNum, rx, rowCy);
+  rx += numW + 0.5*MM;
+  ctx.font = fnt(700, 4.6);
+  ctx.fillText("(税込)", rx, rowCy + 2.2*MM);
+  ctx.textAlign = "center";
+}
+
+async function saveImages(){
+  const msg = document.getElementById('img-msg');
+  const out = document.getElementById('img-out');
+  msg.textContent = "フォント読み込み中…";
+  out.innerHTML = "";
+  try{
+    await Promise.all([
+      document.fonts.load('900 20px "M PLUS Rounded 1c"'),
+      document.fonts.load('800 20px "M PLUS Rounded 1c"'),
+      document.fonts.load('700 20px "M PLUS Rounded 1c"')
+    ]);
+    await document.fonts.ready;
+  }catch(e){}
+  if(!document.fonts.check('900 20px "M PLUS Rounded 1c"')){
+    msg.textContent = "⚠ 専用フォントを読み込めませんでした(電波の悪い場所?)。通信できる場所でページを再読み込みしてからやり直してください";
+    return;
+  }
+  msg.textContent = "カード画像を生成中…";
+
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  out.innerHTML = `<div class="img-hint">${
+    isIOS
+      ? "📱 各画像を<b>長押し</b>→<b>「\"写真\"に追加」</b>で1枚ずつ保存 → Canvaの各ページにアップロードして配置してください。"
+      : "画像はダウンロードにも保存されます。保存されない場合は各画像を長押し(右クリック)で保存 → Canvaの各ページにアップロードして配置してください。"
+  }</div>`;
+
+  /* カード単体: 91:55比率・300dpi(描画は98mm幅基準=1157×699px) */
+  const W = Math.round(98*MM), H = Math.round(98*MM*55/91);
+
+  for(let p=0; p<items.length; p++){
+    const it = items[p];
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    drawCard(ctx, it, 0, 0, W, H);
+
+    await new Promise(resolve=>{
+      cv.toBlob(blob=>{
+        const url = URL.createObjectURL(blob);
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `card-${p+1}`;
+        out.appendChild(img);
+        const cap = document.createElement('div');
+        cap.style.cssText = "color:#666;font-size:12px;text-align:center;margin:-8px 0 14px";
+        cap.textContent = (p+1) + ". " + (it.name || "(名称未入力)");
+        out.appendChild(cap);
+        if(!isIOS){
+          const safe = (it.name||"card").replace(/[\\/:*?"<>|]/g,"").slice(0,20);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `card-${String(p+1).padStart(2,"0")}-${safe}.png`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(()=>a.remove(), 400);
+        }
+        setTimeout(resolve, isIOS ? 50 : 400);
+      }, 'image/png');
+    });
+  }
+  msg.textContent = `カード画像を${items.length}枚生成しました(300dpi・91:55)。Canvaの各ページに1枚ずつ配置してください`;
+}
+
+renderForms();
+renderPreviews();
+fitAll();
+</script>
+</body>
+</html>
