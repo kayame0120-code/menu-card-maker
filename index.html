@@ -6,12 +6,12 @@
 <title>メニューカードメーカー — A4 8面付け</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
     --card-bg:#1f1f1f;
     --ink:#ffffff;
-    --font-maru:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDGothic','Meiryo',sans-serif;
+    --font-maru:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic','Meiryo',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:var(--font-maru);background:#ececf0;color:#222;}
@@ -65,7 +65,7 @@
   .card-stack{max-width:760px;margin:0 auto;padding:0 14px 40px;}
   .stack-box{overflow:hidden;margin-bottom:16px;}
   .stack-scale{transform-origin:top left;}
-  .card-holder{width:371px;height:254px;}
+  .card-holder{width:371px;height:224px;}
 
   .pv-bar{max-width:900px;margin:0 auto;padding:14px 14px 4px;}
   .pv-bar .pv-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
@@ -75,6 +75,9 @@
   .btn-back{background:#e6e6ea;color:#333;}
   .pv-info{font-size:12.5px;color:#666;line-height:1.7;}
   .img-msg{font-size:12px;color:#8a3ffc;font-weight:700;margin:2px 0 4px;}
+  .img-out{max-width:900px;margin:0 auto;padding:0 14px;}
+  .img-out .img-hint{background:#f3ecff;border:1px solid #d9c8fa;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.8;color:#5b2bb0;margin-bottom:10px;}
+  .img-out img{display:block;width:100%;max-width:560px;margin:0 auto 14px;border:1px solid #ddd;box-shadow:0 1px 6px rgba(0,0,0,.15);}
   .note{background:#fff8e5;border:1px solid #f0dfa8;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.8;margin:8px auto 12px;max-width:900px;}
   .note b{color:#a3611c;}
   .opt{font-size:13px;margin:4px 0 8px;}
@@ -97,23 +100,24 @@
   body.no-guides .cell{border-color:transparent;}
 
   .card{
-    width:100%;height:100%;
+    width:100%;height:auto;aspect-ratio:91/55;
     background:var(--card-bg);color:var(--ink);
     border-radius:0;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:3mm 5mm;text-align:center;
+    padding:1.5mm 4.5mm;text-align:center;
     font-family:var(--font-maru);
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
-  .c-name{font-weight:900;font-size:6mm;line-height:1.25;letter-spacing:.02em;}
-  .c-en{font-weight:700;font-size:2.9mm;letter-spacing:.08em;margin-top:1.2mm;}
-  .c-desc{font-weight:700;font-size:2.7mm;line-height:1.65;margin-top:2.2mm;white-space:pre-wrap;}
-  .c-line{width:88%;height:0.5mm;background:var(--ink);margin:2.8mm 0 2.4mm;}
-  .c-bottom{display:flex;align-items:center;justify-content:center;gap:6mm;width:100%;}
-  .c-allergen{font-weight:900;font-size:3.1mm;line-height:1.6;text-align:center;}
-  .c-price{font-weight:900;font-size:8mm;letter-spacing:.01em;white-space:nowrap;}
-  .c-price .yen{font-size:6mm;margin-right:1mm;}
-  .c-price .tax{font-size:3mm;font-weight:700;}
+  .c-name{font-weight:900;font-size:6.8mm;line-height:1.2;letter-spacing:.01em;white-space:nowrap;}
+  .c-en{font-weight:700;font-size:3.5mm;letter-spacing:.05em;margin-top:2.5mm;}
+  .c-desc{font-weight:700;font-size:3.0mm;line-height:1.55;margin-top:4mm;white-space:pre-wrap;}
+  .c-line{width:87%;height:0.55mm;background:var(--ink);margin:3.8mm 0 5mm;}
+  .c-bottom{display:flex;align-items:center;justify-content:center;width:87%;}
+  .c-bottom.has-alg .c-allergen{flex:1;}
+  .c-allergen{font-weight:900;font-size:2.5mm;line-height:1.5;text-align:center;white-space:pre-wrap;}
+  .c-price{font-weight:700;font-size:11.4mm;letter-spacing:.01em;white-space:nowrap;}
+  .c-price .yen{font-size:7.6mm;margin-right:1mm;}
+  .c-price .tax{font-size:4.6mm;font-weight:700;}
 
   @page{size:A4 portrait;margin:0;}
   @media print{
@@ -132,20 +136,20 @@
 
 <div class="tabs">
   <button id="tab-edit" class="active" onclick="setMode('edit')">① 入力</button>
-  <button id="tab-preview" onclick="setMode('preview')">② 印刷プレビュー</button>
+  <button id="tab-preview" onclick="setMode('preview')">② カード画像</button>
 </div>
 
 <!-- ===== 画面1: 入力 ===== -->
 <div id="screen-edit">
   <div class="panel">
-    <h1>メニューカードメーカー</h1>
+    <h1>メニューカードメーカー <span style="font-size:11px;color:#aaa;font-weight:700">v8</span></h1>
     <p class="sub">商品名を入れて<b>「英語に変換」ボタン</b>を押すと英語名が入ります(内蔵辞書→足りない語はネット翻訳の二段構え)。英語名とアレルゲンは空欄OK。</p>
 
     <div id="items"></div>
 
     <div class="actions">
       <button class="btn-add" onclick="addItem()">＋ 商品を追加</button>
-      <button class="btn-preview" onclick="setMode('preview')">② 印刷プレビューを見る →</button>
+      <button class="btn-preview" onclick="setMode('preview')">② カード画像を作る →</button>
     </div>
 
     <details class="io">
@@ -170,21 +174,18 @@
 <div id="screen-preview">
   <div class="pv-bar">
     <div class="pv-actions">
-      <button class="btn-img" onclick="saveImages()">🖼 画像(PNG)で保存</button>
-      <button class="btn-print" onclick="window.print()">🖨 このまま印刷</button>
+      <button class="btn-img" onclick="saveImages()">🖼 カード画像を作る(1枚ずつ)</button>
       <button class="btn-back" onclick="setMode('edit')">← 入力に戻る</button>
     </div>
     <div class="img-msg" id="img-msg"></div>
-    <div class="opt">
-      <label><input type="checkbox" id="guides" checked> 切り取りガイド線を表示(点線・画像/印刷にも出ます)</label>
-    </div>
     <div class="pv-info" id="pv-info"></div>
   </div>
 
   <div class="note">
-    <b>スマホ→PC運用:</b> 「画像(PNG)で保存」でA4サイズの画像(300dpi・印刷画質)がスマホに保存されます。それをLINE/メール等でPCへ送れば、<b>画像を開いて右クリック→印刷</b>でそのまま刷れます。Canvaに読み込んで印刷してもOK(A4デザインを新規作成→画像をアップロード→ページいっぱいに配置)。<br>
-    <b>PCで直接印刷する場合:</b> 「このまま印刷」→ 余白なし・背景のグラフィックON。
+    <b>使い方:</b> ①で商品を入力 → 「カード画像を作る」→ 出てきた画像を1枚ずつ保存 → <b>Canvaにアップロードして各ページに配置</b> → Canva上で好みに微調整して印刷。画像は元デザインと同じ縦横比(91:55)・印刷画質(300dpi)です。
   </div>
+
+  <div class="img-out" id="img-out"></div>
 
   <div class="sheet-area" id="sheets-preview"></div>
 </div>
@@ -369,7 +370,7 @@ function resetAll(){
   location.reload();
 }
 
-const CARD_W = 371, CARD_H = 254;
+const CARD_W = 371, CARD_H = 224;
 const A4_W = 794, A4_H = 1123;
 
 const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -418,15 +419,18 @@ function renderForms(){
 }
 
 function nameSizeMm(name){
-  const n = (name||"").length;
-  return n<=10 ? 6 : n<=14 ? 5.2 : n<=18 ? 4.5 : 3.9;
+  /* カード内幅89mmに収まる最大サイズ(上限6.0mm=Canva実測15.7pt) */
+  let eff = 0;
+  for(const ch of (name||"")) eff += ch.charCodeAt(0) > 255 ? 1 : 0.55;
+  if(eff < 1) eff = 1;
+  return Math.min(6.0, 89/eff);
 }
 
 function cardHTML(it){
   const nameSize = nameSizeMm(it.name);
   const priceNum = esc((it.price||"").replace(/[^0-9,]/g,""));
   const bottom = it.allergen && it.allergen.trim()
-    ? `<div class="c-bottom">
+    ? `<div class="c-bottom has-alg">
          <div class="c-allergen">${esc(it.allergen)}</div>
          <div class="c-price"><span class="yen">¥</span>${priceNum}<span class="tax">(税込)</span></div>
        </div>`
@@ -451,19 +455,9 @@ function renderCardStack(){
 }
 
 function renderSheets(){
-  const wrap = document.getElementById('sheets-preview');
-  const pages = [];
-  for(let i=0;i<Math.max(items.length,1);i+=8) pages.push(items.slice(i,i+8));
-  wrap.innerHTML = pages.map((page,p)=>{
-    let cells = page.map(it=>`<div class="cell">${cardHTML(it)}</div>`).join('');
-    for(let i=page.length;i<8;i++) cells += `<div class="cell"></div>`;
-    return `<div class="sheet-box">
-      <div class="page-label">${p+1} / ${pages.length} ページ</div>
-      <div class="sheet-scale"><div class="sheet">${cells}</div></div>
-    </div>`;
-  }).join('');
+  document.getElementById('sheets-preview').innerHTML = "";
   document.getElementById('pv-info').textContent =
-    `商品 ${items.length} 件 → A4 ${pages.length} 枚(1枚あたり8面)`;
+    "商品 " + items.length + " 件 → カード画像 " + items.length + " 枚";
 }
 
 function renderPreviews(){ renderCardStack(); renderSheets(); }
@@ -551,16 +545,12 @@ function importData(){
   alert(d.length + '件の商品を読み込みました');
 }
 
-document.getElementById('guides').addEventListener('change', e=>{
-  document.body.classList.toggle('no-guides', !e.target.checked);
-});
-
 /* ============================================================
    画像(PNG)書き出し — A4 300dpi(2480×3508px)でCanvas描画
    ============================================================ */
 const DPI = 300;
 const MM = DPI / 25.4;                 /* 1mm あたりのpx */
-const FONTS = '"Zen Maru Gothic","Hiragino Maru Gothic ProN","BIZ UDGothic","Meiryo",sans-serif';
+const FONTS = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif';
 
 function fnt(weight, mm){ return `${weight} ${Math.round(mm*MM)}px ${FONTS}`; }
 
@@ -578,27 +568,28 @@ function fitFont(ctx, text, weight, mm, maxW){
 function drawCard(ctx, it, x, y, w, h){
   /* 黒地(角丸なし) */
   ctx.fillStyle = "#1f1f1f";
-  ctx.fillRect(x, y, w, h);
+  ctx.fillRect(x, y, w, h);   /* 91:55比率に補正済み */
 
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  const cardH = w*55/91; y = y + (h - cardH)/2; h = cardH;
   const cx = x + w/2;
-  const innerW = w - 10*MM;  /* 左右5mmずつ */
+  const innerW = w - 9*MM;  /* 左右4.5mmずつ */
 
   const descLines = (it.desc||"").trim() ? it.desc.trim().split("\n") : [];
   const algLines  = (it.allergen||"").trim() ? it.allergen.trim().split("\n") : [];
   const hasEn = !!(it.en||"").trim();
   const priceNum = (it.price||"").replace(/[^0-9,]/g,"");
 
-  /* --- 各ブロックの高さをmmで積算 --- */
+  /* --- 各ブロックの高さをmmで積算(CSS側と同一値) --- */
   const nameMm  = nameSizeMm(it.name);
-  const nameH   = nameMm*1.25;
-  const enH     = hasEn ? 1.2 + 2.9*1.3 : 0;
-  const descH   = descLines.length ? 2.2 + descLines.length*2.7*1.65 : 0;
-  const ruleH   = 2.8 + 0.5 + 2.4;
-  const algH    = algLines.length*3.1*1.6;
-  const priceH  = 8*1.15;
+  const nameH   = nameMm*1.2;
+  const enH     = hasEn ? 2.5 + 3.5*1.3 : 0;
+  const descH   = descLines.length ? 4 + descLines.length*3.0*1.55 : 0;
+  const ruleH   = 3.8 + 0.55 + 5;
+  const algH    = algLines.length*2.5*1.5;
+  const priceH  = 11.4*1.15;
   const botH    = Math.max(algH, priceH);
   const totalH  = nameH + enH + descH + ruleH + botH;
 
@@ -612,20 +603,19 @@ function drawCard(ctx, it, x, y, w, h){
 
   /* 英語名 */
   if(hasEn){
-    cy += 1.2*MM;
-    const enMm = fitFont(ctx, it.en.trim(), 700, 2.9, innerW);
+    cy += 2.5*MM;
+    const enMm = fitFont(ctx, it.en.trim(), 700, 3.5, innerW);
     ctx.font = fnt(700, enMm);
-    ctx.fillText(it.en.trim(), cx, cy + (2.9*1.3*MM)/2);
-    cy += 2.9*1.3*MM;
+    ctx.fillText(it.en.trim(), cx, cy + (3.5*1.3*MM)/2);
+    cy += 3.5*1.3*MM;
   }
 
   /* 説明文 */
   if(descLines.length){
-    cy += 2.2*MM;
-    ctx.font = fnt(700, 2.7);
-    const lh = 2.7*1.65*MM;
+    cy += 4*MM;
+    const lh = 3.0*1.55*MM;
     descLines.forEach(line=>{
-      const m = fitFont(ctx, line, 700, 2.7, innerW);
+      const m = fitFont(ctx, line, 700, 3.0, innerW);
       ctx.font = fnt(700, m);
       ctx.fillText(line, cx, cy + lh/2);
       cy += lh;
@@ -633,100 +623,114 @@ function drawCard(ctx, it, x, y, w, h){
   }
 
   /* 白線 */
-  cy += 2.8*MM;
-  ctx.fillRect(x + w*0.06, cy, w*0.88, 0.5*MM);
-  cy += (0.5+2.4)*MM;
+  cy += 3.8*MM;
+  ctx.fillRect(x + w*0.065, cy, w*0.87, 0.55*MM);
+  cy += (0.55+5)*MM;
 
-  /* 下段: アレルゲン + 価格 */
+  /* 下段: 白線と同じ幅の行。価格は右端揃え、アレルゲンは残り左側の中央 */
   const rowCy = cy + (botH*MM)/2;
-  ctx.font = fnt(900, 8);
+  const rowL = x + w*0.065, rowR = x + w*0.935;
+  ctx.font = fnt(700, 11.4);
   const numW = ctx.measureText(priceNum).width;
-  ctx.font = fnt(900, 6);
+  ctx.font = fnt(700, 7.6);
   const yenW = ctx.measureText("¥").width;
-  ctx.font = fnt(700, 3);
+  ctx.font = fnt(700, 4.6);
   const taxW = ctx.measureText("(税込)").width;
   const priceW = yenW + 1*MM + numW + 0.5*MM + taxW;
 
-  let algW = 0;
+  let rx;
   if(algLines.length){
-    ctx.font = fnt(900, 3.1);
-    algLines.forEach(l=>{ algW = Math.max(algW, ctx.measureText(l).width); });
-  }
-
-  const gap = algLines.length ? 6*MM : 0;
-  const rowW = algW + gap + priceW;
-  let rx = cx - rowW/2;
-
-  if(algLines.length){
-    ctx.font = fnt(900, 3.1);
-    const alh = 3.1*1.6*MM;
+    const priceLeft = rowR - priceW;
+    /* アレルゲンは行左端〜価格左端の中央に */
+    const aCx = (rowL + priceLeft) / 2;
+    ctx.font = fnt(900, 2.5);
+    const alh = 2.5*1.5*MM;
     let ay = rowCy - (algLines.length*alh)/2;
     algLines.forEach(l=>{
-      ctx.fillText(l, rx + algW/2, ay + alh/2);
+      ctx.fillText(l, aCx, ay + alh/2);
       ay += alh;
     });
-    rx += algW + gap;
+    rx = priceLeft;
+  } else {
+    rx = cx - priceW/2;
   }
 
   /* 価格(左寄せで組む) */
   ctx.textAlign = "left";
-  ctx.font = fnt(900, 6);
+  ctx.font = fnt(700, 7.6);
   ctx.fillText("¥", rx, rowCy);
   rx += yenW + 1*MM;
-  ctx.font = fnt(900, 8);
+  ctx.font = fnt(700, 11.4);
   ctx.fillText(priceNum, rx, rowCy);
   rx += numW + 0.5*MM;
-  ctx.font = fnt(700, 3);
-  ctx.fillText("(税込)", rx, rowCy + 1.5*MM);
+  ctx.font = fnt(700, 4.6);
+  ctx.fillText("(税込)", rx, rowCy + 2.2*MM);
   ctx.textAlign = "center";
 }
 
 async function saveImages(){
   const msg = document.getElementById('img-msg');
-  msg.textContent = "画像を生成中…";
-  try{ await document.fonts.ready; }catch(e){}
+  const out = document.getElementById('img-out');
+  msg.textContent = "フォント読み込み中…";
+  out.innerHTML = "";
+  try{
+    await Promise.all([
+      document.fonts.load('900 20px "M PLUS Rounded 1c"'),
+      document.fonts.load('800 20px "M PLUS Rounded 1c"'),
+      document.fonts.load('700 20px "M PLUS Rounded 1c"')
+    ]);
+    await document.fonts.ready;
+  }catch(e){}
+  if(!document.fonts.check('900 20px "M PLUS Rounded 1c"')){
+    msg.textContent = "⚠ 専用フォントを読み込めませんでした(電波の悪い場所?)。通信できる場所でページを再読み込みしてからやり直してください";
+    return;
+  }
+  msg.textContent = "カード画像を生成中…";
 
-  const showGuides = document.getElementById('guides').checked;
-  const pages = [];
-  for(let i=0;i<Math.max(items.length,1);i+=8) pages.push(items.slice(i,i+8));
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  const pageW = Math.round(210*MM), pageH = Math.round(297*MM);
-  const cellW = pageW/2, cellH = pageH/4;
-  const pad = 3.5*MM;
+  out.innerHTML = `<div class="img-hint">${
+    isIOS
+      ? "📱 各画像を<b>長押し</b>→<b>「\"写真\"に追加」</b>で1枚ずつ保存 → Canvaの各ページにアップロードして配置してください。"
+      : "画像はダウンロードにも保存されます。保存されない場合は各画像を長押し(右クリック)で保存 → Canvaの各ページにアップロードして配置してください。"
+  }</div>`;
 
-  for(let p=0; p<pages.length; p++){
+  /* カード単体: 91:55比率・300dpi(描画は98mm幅基準=1157×699px) */
+  const W = Math.round(98*MM), H = Math.round(98*MM*55/91);
+
+  for(let p=0; p<items.length; p++){
+    const it = items[p];
     const cv = document.createElement('canvas');
-    cv.width = pageW; cv.height = pageH;
+    cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d');
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0,0,pageW,pageH);
-
-    pages[p].forEach((it, idx)=>{
-      const col = idx % 2, row = Math.floor(idx/2);
-      drawCard(ctx, it, col*cellW+pad, row*cellH+pad, cellW-pad*2, cellH-pad*2);
-    });
-
-    if(showGuides){
-      ctx.strokeStyle = "#c9c9c9";
-      ctx.lineWidth = 0.3*MM;
-      ctx.setLineDash([4*MM, 2.5*MM]);
-      for(let r=0;r<4;r++) for(let c=0;c<2;c++)
-        ctx.strokeRect(c*cellW, r*cellH, cellW, cellH);
-      ctx.setLineDash([]);
-    }
+    drawCard(ctx, it, 0, 0, W, H);
 
     await new Promise(resolve=>{
       cv.toBlob(blob=>{
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `menu-card-A4-${p+1}.png`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); resolve(); }, 400);
+        const url = URL.createObjectURL(blob);
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `card-${p+1}`;
+        out.appendChild(img);
+        const cap = document.createElement('div');
+        cap.style.cssText = "color:#666;font-size:12px;text-align:center;margin:-8px 0 14px";
+        cap.textContent = (p+1) + ". " + (it.name || "(名称未入力)");
+        out.appendChild(cap);
+        if(!isIOS){
+          const safe = (it.name||"card").replace(/[\\/:*?"<>|]/g,"").slice(0,20);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `card-${String(p+1).padStart(2,"0")}-${safe}.png`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(()=>a.remove(), 400);
+        }
+        setTimeout(resolve, isIOS ? 50 : 400);
       }, 'image/png');
     });
   }
-  msg.textContent = `PNGを${pages.length}枚保存しました(300dpi・A4実寸)。スマホの「ダウンロード」フォルダに入っています`;
+  msg.textContent = `カード画像を${items.length}枚生成しました(300dpi・91:55)。Canvaの各ページに1枚ずつ配置してください`;
 }
 
 renderForms();
